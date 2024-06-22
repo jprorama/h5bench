@@ -52,6 +52,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#include <libgen.h>
 #include "../commons/h5bench_util.h"
 #include "../commons/async_adaptor.h"
 #ifdef HAVE_SUBFILING
@@ -1070,6 +1071,28 @@ main(int argc, char *argv[])
     }
 #endif
 
+    // fix up the csv ouput to use per-rank csv
+    if (params.useCSV) {
+      char *csvfile, *dirc, *dname;
+      csvfile = calloc(512, sizeof(char));
+
+      dirc = strdup(cfg_file_path);
+      dname = dirname(dirc);
+
+      if (sprintf(csvfile, "%s/output_%d.csv", dname, MY_RANK) > 0) {
+	// clean up existing files
+	fclose(params.csv_fs);
+	unlink(params.csv_path);
+	free(params.csv_path);
+
+	// open an per-rank csv file
+	params.csv_path = csvfile;
+	params.csv_fs = csv_init(params.csv_path, params.env_meta_path);
+
+      }
+    }
+
+
     if (MY_RANK == 0) {
         print_params(&params);
     }
@@ -1279,6 +1302,7 @@ main(int argc, char *argv[])
             fprintf(params.csv_fs, "metric, value, unit\n");
             fprintf(params.csv_fs, "operation, %s, %s\n", "write_var_data_dist", "");
             fprintf(params.csv_fs, "ranks, %d, %s\n", NUM_RANKS, "");
+            fprintf(params.csv_fs, "rank, %d, %s\n", MY_RANK, "");
             fprintf(params.csv_fs, "Total number of particles, %lldM, %s\n", TOTAL_PARTICLES / (M_VAL), "");
             fprintf(params.csv_fs, "Final mean particles, %ld, %s\n", final_mean, "");
             fprintf(params.csv_fs, "Final standard deviation, %f, %s\n", sqrt(final_std / NUM_RANKS), "");
