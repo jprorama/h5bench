@@ -535,7 +535,7 @@ data_write_contig_contig_MD_array(time_step *ts, hid_t loc, hid_t *dset_ids, hid
     *metadata_time = t2 - t1;
     *data_time     = t3 - t2;
 
-    if (MY_RANK == 0)
+    //if (MY_RANK == 0)
     // printf("    %s: Finished writing time step \n", __func__);
 }
 
@@ -816,7 +816,7 @@ _run_benchmark_write(bench_params params, hid_t file_id, hid_t fapl, hid_t files
         t1         = get_time_usec();
         meta_time3 = (t1 - t0);
 
-        if (MY_RANK == 0)
+        //if (MY_RANK == 0)
             // printf("Writing %s ... \n", grp_name);
 
             switch (pattern) {
@@ -876,7 +876,7 @@ _run_benchmark_write(bench_params params, hid_t file_id, hid_t fapl, hid_t files
 
         if (ts_index != timestep_cnt - 1) { // no sleep after the last ts
             if (params.compute_time.time_num >= 0) {
-                if (MY_RANK == 0)
+                //if (MY_RANK == 0)
                     // printf("Computing...\n");
                     async_sleep(ts->es_data, params.compute_time);
             }
