@@ -1222,7 +1222,7 @@ main(int argc, char *argv[])
     std_1      = pow(NUM_PARTICLES - final_mean, 2);
     MPI_Allreduce(&std_1, &final_std, 1, MPI_LONG_LONG, MPI_SUM, comm);
 
-    //if (MY_RANK == 0) {
+    if (MY_RANK == 0) {
         human_readable value;
         char *         mode_str = NULL;
 
@@ -1298,7 +1298,7 @@ main(int argc, char *argv[])
             fprintf(params.csv_fs, "observed time, %.3f, %s\n", oct_s, "seconds");
             fclose(params.csv_fs);
         }
-	//}
+    }
 
     MPI_Finalize();
     return 0;
