@@ -1088,44 +1088,44 @@ main(int argc, char *argv[])
         printf("Given standard deviation : %ld \n", STDEV_DIM_1);
         printf("Total ranks %i \n", NUM_RANKS);
 
+        if (params.useDataDist) {
+            // read data file listed in config file
+            char size_line[256] = "";
 
-	if (params.useDataDist) {
-	  // read data file listed in config file
-	  char size_line[256] = "";
+            printf("Begin data dist processing\n");
+            printf("Read data file %s\n", params.data_dist_path);
 
-	  printf("Begin data dist processing\n");
-	  printf("Read data file %s\n", params.data_dist_path);
+            FILE *file = fopen(params.data_dist_path, "r");
 
-	  FILE *file = fopen(params.data_dist_path, "r");
+            while (fgets(size_line, 256, file)) {
 
-	  while (fgets(size_line, 256, file)) {
+                printf("Read line: %s\n", size_line);
+                char *    tokens[2];
+                int       index;
+                long long size;
+                char *    tok = strtok(size_line, " ");
+                if (tok) {
+                    index = atoi(tok);
+                    tok   = strtok(NULL, " ");
+                    if (tok) {
+                        /* don't compute scale if factor is 1, identity */
+                        if (params.data_dist_scale == 1.0)
+                            holder[index] = strtoll(tok, NULL, 10);
+                        else
+                            holder[index] = (long long)(params.data_dist_scale * strtoll(tok, NULL, 10));
+                    }
+                }
+                else {
+                    return -1;
+                }
+            }
+        }
 
-	    printf("Read line: %s\n", size_line);
-	    char *tokens[2];
-	    int index;
-	    long long size;
-	    char *tok = strtok(size_line, " ");
-	    if (tok) {
-	      index = atoi(tok);
-	      tok       = strtok(NULL, " ");
-	      if (tok) {
-		/* don't compute scale if factor is 1, identity */
-		if (params.data_dist_scale == 1.0)
-		  holder[index] = strtoll(tok, NULL, 10);
-		else
-		  holder[index] = (long long) (params.data_dist_scale * strtoll(tok, NULL, 10));
-	      }
-	    } else {
-	      return -1;
-	    }
-	  }
-	}
-
-	else {
-	  for (int i = 0; i < NUM_RANKS; i++) {
-	    holder[i] = (long long)normal_dist_particle_giver(NUM_PARTICLES, STDEV_DIM_1);
-	  }
-	}
+        else {
+            for (int i = 0; i < NUM_RANKS; i++) {
+                holder[i] = (long long)normal_dist_particle_giver(NUM_PARTICLES, STDEV_DIM_1);
+            }
+        }
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -1242,8 +1242,8 @@ main(int argc, char *argv[])
             read_time_val(params.compute_time, TIME_US) * (params.cnt_time_step - 1);
         printf("Total emulated compute time: %.3lf s\n", total_sleep_time_us / (1000.0 * 1000.0));
 
-        //double total_size_bytes = NUM_RANKS * local_data_size;
-	double total_size_bytes = local_data_size;
+        // double total_size_bytes = NUM_RANKS * local_data_size;
+        double total_size_bytes = local_data_size;
         value                   = format_human_readable(total_size_bytes);
         printf("Total write size: %.3lf %cB\n", value.value, value.unit);
 
